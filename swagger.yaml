@@ -21,7 +21,7 @@ info:
 servers:
   - url: http://localhost:3000/api
     description: Development server
-  - url: https://yourapp.com/api
+  - url: https://notenest-api-cgul.onrender.com/api
     description: Production server
 
 tags:
