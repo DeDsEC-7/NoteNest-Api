@@ -1,9 +1,6 @@
 {
   "development": {
-    "username": "notenest_2ob4_user",
-    "password": "QOwmxKudFOO66qAzKZOWbKteEsMl5NpA",
-    "database": "notenest_2ob4",
-    "host": "dpg-d4g4rmefu37c739o5m7g-a.oregon-postgres.render.com",
+    "use_env_variable": "DATABASE_URL",
     "dialect": "postgres",
     "dialectOptions": {
       "ssl": {
@@ -11,7 +8,6 @@
         "rejectUnauthorized": false
       }
     }
-  
   },
   "test": {
     "username": "postgres",
@@ -22,10 +18,7 @@
     "port": 5432
   },
   "production": {
-    "username": "notenest_2ob4_user",
-    "password": "QOwmxKudFOO66qAzKZOWbKteEsMl5NpA",
-    "database": "notenest_2ob4",
-    "host": "dpg-d4g4rmefu37c739o5m7g-a.oregon-postgres.render.com",
+    "use_env_variable": "DATABASE_URL",
     "dialect": "postgres",
     "dialectOptions": {
       "ssl": {

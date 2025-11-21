@@ -12,35 +12,56 @@ const { swaggerDocument, swaggerUi, options } = require('./swagger');
 const app = express();
 
 // CORS configuration
-const allowedOrigins = [
+const allowedOrigins = [  // FIXED: Changed from allowedOrigals
   'http://localhost:5173',
-  'https://your-frontend-domain.vercel.app' // Add your frontend domain
+  'https://your-frontend-app.vercel.app' // Update with your frontend URL
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {  // FIXED: Changed from allowedOrigals
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
     }
-    return callback(null, true);
   },
   credentials: true
 }));
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
 
 // Swagger UI
-// Swagger UI - Serve the documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
-
 
 // Public Routes
 app.use('/api/auth', authRoutes);
+
+// Health check with database connection test
+app.get('/health', async (req, res) => {
+  try {
+    const { sequelize } = require('./models');
+    await sequelize.authenticate();
+    res.json({ 
+      success: true, 
+      message: 'Server and database are healthy',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: 'Database connection failed',
+      message: error.message 
+    });
+  }
+});
 
 // Protected Routes
 app.use('/api/notes', authenticate, noteRoutes);
@@ -48,17 +69,44 @@ app.use('/api/todos', authenticate, todoRoutes);
 app.use('/api/tasks', authenticate, taskRoutes);
 app.use('/api/home', authenticate, homeRoutes);
 
-// Health check
-app.get('/', (req, res) => res.json({ success: true, message: 'Server is running' }));
-app.get('/api', (req, res) => res.json({ success: true, message: 'API is active' }));
+// Root endpoints
+app.get('/', (req, res) => res.json({ 
+  success: true, 
+  message: 'NoteNest API Server is running',
+  documentation: '/api-docs'
+}));
+
+app.get('/api', (req, res) => res.json({ 
+  success: true, 
+  message: 'NoteNest API is active',
+  version: '1.0.0'
+}));
 
 // 404 handler
-app.use('*', (req, res) => res.status(404).json({ success: false, error: 'Route not found' }));
+app.use('*', (req, res) => res.status(404).json({ 
+  success: false, 
+  error: 'Route not found',
+  path: req.originalUrl 
+}));
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ success: false, error: 'Something went wrong!' });
+  console.error('Global Error Handler:', err.stack);
+  
+  // CORS error
+  if (err.message.includes('CORS')) {
+    return res.status(403).json({ 
+      success: false, 
+      error: 'CORS Error',
+      message: err.message 
+    });
+  }
+  
+  res.status(500).json({ 
+    success: false, 
+    error: 'Internal Server Error',
+    message: process.env.NODE_ENV === 'production' ? 'Something went wrong!' : err.message
+  });
 });
 
 module.exports = app;
