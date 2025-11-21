@@ -14,7 +14,7 @@ const app = express();
 // CORS configuration
 const allowedOrigins = [  // FIXED: Changed from allowedOrigals
   'http://localhost:5173',
-  'https://your-frontend-app.vercel.app' // Update with your frontend URL
+  'https://note-nest-client.vercel.app' // Update with your frontend URL
 ];
 
 app.use(cors({
