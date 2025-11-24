@@ -15,7 +15,7 @@ const app = express();
 const allowedOrigins = [  // FIXED: Changed from allowedOrigals
   'http://localhost:5173',
   'https://note-nest-client.vercel.app',
-  'https://notenest-api-cgul.onrender.com/'
+  'https://notenest-api-cgul.onrender.com'
 ];
 
 app.use(cors({
